@@ -4,7 +4,7 @@
   <subtitle><![CDATA[on the way]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2014-09-30T02:59:56.738Z</updated>
+  <updated>2014-10-22T07:11:20.111Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,11 +15,79 @@
   <generator uri="http://zespia.tw/hexo/">Hexo</generator>
   
   <entry>
+    <title><![CDATA[objective-c rac 学习：map与flattenMap]]></title>
+    <link href="http://yoursite.com/2014/10/22/oc-rac-map/"/>
+    <id>http://yoursite.com/2014/10/22/oc-rac-map/</id>
+    <published>2014-10-22T03:15:21.000Z</published>
+    <updated>2014-10-22T07:11:16.000Z</updated>
+    <content type="html"><![CDATA[<p>这两天依照<a href="http://www.raywenderlich.com/62699/reactivecocoa-tutorial-pt1" target="_blank" rel="external">这篇文章</a>学习了一下RAC相关的概念，先写一篇总结一下map和flattenmap相关的内容，后面对RAC有整体性的了解之后再尝试补充一些基础的关于<em>RACSignal</em>的用法</p>
+<h2 id="map的用途">map的用途</h2>
+<p>之前提到的教程中主要用于对信号输出值的转换：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">RACSignal *validUsernameSignal = [<span class="keyword">self</span><span class="variable">.usernameTextField</span><span class="variable">.rac_textSignal</span> map:^<span class="keyword">id</span>(<span class="built_in">NSString</span> *text){</div><div class="line">    <span class="keyword">return</span> @([<span class="keyword">self</span> isValidUsername:text]);</div><div class="line">}];</div></pre></td></tr></table></figure>
+
+<p>上面的代码通过rac对<code>UITextField</code>做的扩充，使用<code>rac_textSignal</code>来创建<code>RACSignal</code>，之后通过<strong>map</strong>将输入值从text转换为bool</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">RAC(<span class="keyword">self</span><span class="variable">.usernameTextField</span>,backgroundColor) = [validUsernameSignal map:^<span class="keyword">id</span>(<span class="built_in">NSNumber</span> *userNameValid){</div><div class="line">    <span class="keyword">return</span> [userNameValid boolValue] ? [<span class="built_in">UIColor</span> clearColor]:[<span class="built_in">UIColor</span> yellowColor];</div><div class="line">}];</div></pre></td></tr></table></figure>
+
+<p>这段代码通过map将bool值进一步转换为<code>UIColor</code></p>
+<a id="more"></a>
+
+<p>下面是map方法的文档解释</p>
+<blockquote>
+<p>Maps <code>block</code> across the values in the receiver.<br>This corresponds to the <code>Select</code> method in Rx.<br>Returns a new stream with the mapped values.</p>
+</blockquote>
+<p>可以看到主要是将接受到的值转换为对应的数据流继续传输</p>
+<p>但是如果此时，map转换后返回的不是一般的值，而是另一个<code>RACSignal</code>时，这个函数就没法正确地运行了,例如下面的代码:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[[[<span class="keyword">self</span><span class="variable">.signInButton</span> rac_signalForControlEvents:UIControlEventTouchUpInside] map:^<span class="keyword">id</span>(<span class="keyword">id</span> value) {</div><div class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> signInSignal];</div><div class="line">}] subscribeNext:^(<span class="keyword">id</span> x) {</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"SIGN IN RESULT %@"</span>,x);</div><div class="line">}];</div></pre></td></tr></table></figure>
+
+<p><code>signInSignal</code>方法返回一个<code>RACSignal</code>，而在这个信号的内部则返回bool型的值，我们原本的预期是希望能在打出来的日志中看到bool值，但实际情况确实如下所示：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="input"><span class="prompt">2014-10-22 14:29:51.036 RWReactivePlayground[18653:1997732] SIGN IN RESULT &lt;RACDynamicSignal: 0x7faddbe15690&gt;</span> <span class="symbol">name:</span> +<span class="symbol">createSignal:</span></span></div></pre></td></tr></table></figure>
+
+<p>也就是说外层订阅者在消费时，无法解析内层的信号，这种情况可以通过在外层消费代码中添加消费内层信号的代码来解决，但是这种嵌套的方式不是太优雅</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">[[[<span class="keyword">self</span><span class="variable">.signInButton</span> rac_signalForControlEvents:UIControlEventTouchUpInside] map:^<span class="keyword">id</span>(<span class="keyword">id</span> value) {</div><div class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> signInSignal];</div><div class="line">}] subscribeNext:^(<span class="keyword">id</span> x) {</div><div class="line">    [x subscribeNext:^(<span class="keyword">id</span> x) {</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"SIGN IN RESULT %@"</span>,x);</div><div class="line">    }];</div><div class="line">}];</div></pre></td></tr></table></figure>
+
+<p>那篇文章中就给出了另一种解决方案，也就是使用<code>flattenMap</code>:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[[[<span class="keyword">self</span><span class="variable">.signInButton</span> rac_signalForControlEvents:UIControlEventTouchUpInside] flattenMap:^<span class="keyword">id</span>(<span class="keyword">id</span> value) {</div><div class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> signInSignal];</div><div class="line">}] subscribeNext:^(<span class="keyword">id</span> x) {</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"SIGN IN RESULT %@"</span>,x);</div><div class="line">}];</div></pre></td></tr></table></figure>
+
+<p>根据文档，<code>flattenMap</code>主要的block主要用于返回一个新的<code>RACSignal</code>类，在这个例子中也可以说是将内部信号暴露给外部:</p>
+<blockquote>
+<p>block - A block which accepts the values in the receiver and returns a new instance of the receiver’s class. This block should not return <code>nil</code>.</p>
+</blockquote>
+<p>最终的结果将是依据block返回的信号，形成新的数据流，即将嵌套在内部的信号暴露在外部，此时运行结果为：</p>
+<blockquote>
+<p>2014-10-22 14:47:52.082 RWReactivePlayground[18760:2005063] SIGN IN RESULT 0</p>
+</blockquote>
+<p>即我们预期的bool型的结果</p>
+<h2 id="总结">总结</h2>
+<p>信号嵌套的方式在实际开发过程时常可能遇到，如果通过在外层信号消费代码内消费内层信号的话，会使代码混乱而无法阅读。相较之下，flattenMap就是一个比较优雅的方式，通过一个block来组织最外层希望获得的信号形式，多层信号嵌套时也更易于代码阅读</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>这两天依照<a href="http://www.raywenderlich.com/62699/reactivecocoa-tutorial-pt1" target="_blank" rel="external">这篇文章</a>学习了一下RAC相关的概念，先写一篇总结一下map和flattenmap相关的内容，后面对RAC有整体性的了解之后再尝试补充一些基础的关于<em>RACSignal</em>的用法</p>
+<h2 id="map的用途">map的用途</h2>
+<p>之前提到的教程中主要用于对信号输出值的转换：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">RACSignal *validUsernameSignal = [<span class="keyword">self</span><span class="variable">.usernameTextField</span><span class="variable">.rac_textSignal</span> map:^<span class="keyword">id</span>(<span class="built_in">NSString</span> *text){</div><div class="line">    <span class="keyword">return</span> @([<span class="keyword">self</span> isValidUsername:text]);</div><div class="line">}];</div></pre></td></tr></table></figure>
+
+<p>上面的代码通过rac对<code>UITextField</code>做的扩充，使用<code>rac_textSignal</code>来创建<code>RACSignal</code>，之后通过<strong>map</strong>将输入值从text转换为bool</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">RAC(<span class="keyword">self</span><span class="variable">.usernameTextField</span>,backgroundColor) = [validUsernameSignal map:^<span class="keyword">id</span>(<span class="built_in">NSNumber</span> *userNameValid){</div><div class="line">    <span class="keyword">return</span> [userNameValid boolValue] ? [<span class="built_in">UIColor</span> clearColor]:[<span class="built_in">UIColor</span> yellowColor];</div><div class="line">}];</div></pre></td></tr></table></figure>
+
+<p>这段代码通过map将bool值进一步转换为<code>UIColor</code></p>
+]]>
+    
+    </summary>
+    
+      <category term="ios" scheme="http://yoursite.com/tags/ios/"/>
+    
+      <category term="rac" scheme="http://yoursite.com/tags/rac/"/>
+    
+      <category term="program" scheme="http://yoursite.com/categories/program/"/>
+    
+  </entry>
+  
+  <entry>
     <title><![CDATA[Hello World]]></title>
-    <link href="http://yoursite.com/2014/09/26/hello-world/"/>
-    <id>http://yoursite.com/2014/09/26/hello-world/</id>
-    <published>2014-09-26T10:12:33.000Z</published>
-    <updated>2014-09-26T10:12:33.000Z</updated>
+    <link href="http://yoursite.com/2014/09/30/hello-world/"/>
+    <id>http://yoursite.com/2014/09/30/hello-world/</id>
+    <published>2014-09-30T03:36:29.000Z</published>
+    <updated>2014-09-30T03:36:28.000Z</updated>
     <content type="html"><![CDATA[<p>Welcome to <a href="http://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="http://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="http://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">trobuleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
 <h2 id="Quick_Start">Quick Start</h2>
 <h3 id="Create_a_new_post">Create a new post</h3>
@@ -28,6 +96,8 @@
 <p>More info: <a href="http://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
 <h3 id="Run_server">Run server</h3>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo server</div></pre></td></tr></table></figure>
+
+<a id="more"></a>
 
 <p>More info: <a href="http://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
 <h3 id="Generate_static_files">Generate static files</h3>
@@ -40,7 +110,17 @@
 <p>More info: <a href="http://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
 ]]></content>
     <summary type="html">
-    <![CDATA[<p>Welcome to <a href="http://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="http://hexo.io]]>
+    <![CDATA[<p>Welcome to <a href="http://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="http://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="http://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">trobuleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
+<h2 id="Quick_Start">Quick Start</h2>
+<h3 id="Create_a_new_post">Create a new post</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo new <span class="string">"My New Post"</span></div></pre></td></tr></table></figure>
+
+<p>More info: <a href="http://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
+<h3 id="Run_server">Run server</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo server</div></pre></td></tr></table></figure>
+
+]]>
+    
     </summary>
     
   </entry>

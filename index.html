@@ -67,11 +67,68 @@
     <header>
       
         <div class="icon"></div>
-        <time datetime="2014-09-26T10:12:33.000Z"><a href="/2014/09/26/hello-world/">Sep 26 2014</a></time>
+        <time datetime="2014-10-22T03:15:21.000Z"><a href="/2014/10/22/oc-rac-map/">Oct 22 2014</a></time>
       
       
   
-    <h1 class="title"><a href="/2014/09/26/hello-world/">Hello World</a></h1>
+    <h1 class="title"><a href="/2014/10/22/oc-rac-map/">objective-c rac 学习：map与flattenMap</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>这两天依照<a href="http://www.raywenderlich.com/62699/reactivecocoa-tutorial-pt1" target="_blank" rel="external">这篇文章</a>学习了一下RAC相关的概念，先写一篇总结一下map和flattenmap相关的内容，后面对RAC有整体性的了解之后再尝试补充一些基础的关于<em>RACSignal</em>的用法</p>
+<h2 id="map的用途">map的用途</h2>
+<p>之前提到的教程中主要用于对信号输出值的转换：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">RACSignal *validUsernameSignal = [<span class="keyword">self</span><span class="variable">.usernameTextField</span><span class="variable">.rac_textSignal</span> map:^<span class="keyword">id</span>(<span class="built_in">NSString</span> *text){</div><div class="line">    <span class="keyword">return</span> @([<span class="keyword">self</span> isValidUsername:text]);</div><div class="line">}];</div></pre></td></tr></table></figure>
+
+<p>上面的代码通过rac对<code>UITextField</code>做的扩充，使用<code>rac_textSignal</code>来创建<code>RACSignal</code>，之后通过<strong>map</strong>将输入值从text转换为bool</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">RAC(<span class="keyword">self</span><span class="variable">.usernameTextField</span>,backgroundColor) = [validUsernameSignal map:^<span class="keyword">id</span>(<span class="built_in">NSNumber</span> *userNameValid){</div><div class="line">    <span class="keyword">return</span> [userNameValid boolValue] ? [<span class="built_in">UIColor</span> clearColor]:[<span class="built_in">UIColor</span> yellowColor];</div><div class="line">}];</div></pre></td></tr></table></figure>
+
+<p>这段代码通过map将bool值进一步转换为<code>UIColor</code></p>
+
+      
+    </div>
+    <footer>
+      
+        
+          <div class="alignleft">
+            <a href="/2014/10/22/oc-rac-map/#more" class="more-link">Read More</a>
+          </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+  <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2014-09-30T03:36:29.000Z"><a href="/2014/09/30/hello-world/">Sep 30 2014</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2014/09/30/hello-world/">Hello World</a></h1>
   
 
     </header>
@@ -86,20 +143,15 @@
 <h3 id="Run_server">Run server</h3>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo server</div></pre></td></tr></table></figure>
 
-<p>More info: <a href="http://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate_static_files">Generate static files</h3>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo generate</div></pre></td></tr></table></figure>
-
-<p>More info: <a href="http://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy_to_remote_sites">Deploy to remote sites</h3>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo deploy</div></pre></td></tr></table></figure>
-
-<p>More info: <a href="http://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
 
       
     </div>
     <footer>
       
+        
+          <div class="alignleft">
+            <a href="/2014/09/30/hello-world/#more" class="more-link">Read More</a>
+          </div>
         
         
       
@@ -126,6 +178,15 @@
 </div>
 
   
+<div class="widget tag">
+  <h3 class="title">Categories</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/program/">program</a><small>1</small></li>
+  
+  </ul>
+</div>
+
 
   
 <div class="widget tag">
@@ -133,7 +194,11 @@
   <ul class="entry">
     
       <li>
-        <a href="/2014/09/26/hello-world/">Hello World</a>
+        <a href="/2014/10/22/oc-rac-map/">objective-c rac 学习：map与flattenMap</a>
+      </li>
+    
+      <li>
+        <a href="/2014/09/30/hello-world/">Hello World</a>
       </li>
     
   </ul>
@@ -141,6 +206,17 @@
 
 
   
+<div class="widget tag">
+  <h3 class="title">Tags</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/ios/">ios</a><small>1</small></li>
+  
+    <li><a href="/tags/rac/">rac</a><small>1</small></li>
+  
+  </ul>
+</div>
+
 </aside>
     <div class="clearfix"></div>
   </div>
