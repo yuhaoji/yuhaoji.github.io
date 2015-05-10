@@ -4,7 +4,7 @@
   <subtitle><![CDATA[on the way]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2014-10-22T07:11:20.111Z</updated>
+  <updated>2015-05-10T12:17:34.600Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -13,6 +13,64 @@
   </author>
   
   <generator uri="http://zespia.tw/hexo/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[iOS AutoLayout 实践 - view Hidden后的自动调整]]></title>
+    <link href="http://yoursite.com/2015/05/10/ios-autolayout-view-hidden/"/>
+    <id>http://yoursite.com/2015/05/10/ios-autolayout-view-hidden/</id>
+    <published>2015-05-10T11:02:06.000Z</published>
+    <updated>2015-05-10T12:17:00.000Z</updated>
+    <content type="html"><![CDATA[<p>公司的app在前段时间终于开始不支持iOS5之后，Autolayout的学习也就再没有任何障碍了，这段时间可能会陆续在项目中开始使用Autolayout，后续遇到的坑应该也会持续更新在这里，做个记录</p>
+<a id="more"></a>
+
+<p>由于目前的项目中经常出现一个view内部各种不同的subview会依据数据来源的不同或是其他的情况而进行部分隐藏，如下图所示：</p>
+<div align="center"><br><img src="http://yhjblog.qiniudn.com/20150510QQ20150510-1@2x.png" width="20%" height="20%"></div>
+
+<p>假设中间红色的viewMiddle在一定情况下不会显示，需要蓝色的view向上补充位置，垂直方向上的约束为：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">self.viewDic = NSDictionaryOfVariableBindings(_button,_viewTopLeft,_viewTopRight,_viewMiddle,_viewBottom);</div><div class="line">NSArray *topLeftVFL1 = [NSLayoutConstraint constraintsWithVisualForma<span class="variable">t:</span>@<span class="string">"V:|-20-[_viewTopLeft(==_viewBottom)]-20-[_viewMiddle(==_viewBottom)]-20-[_viewBottom]-20-|"</span></div><div class="line">                                                                  option<span class="variable">s:NSLayoutFormatDirectionLeadingToTrailing</span></div><div class="line">                                                                  metric<span class="variable">s:nil</span></div><div class="line">                                                                    <span class="keyword">view</span><span class="variable">s:self</span>.viewDic];</div><div class="line">[self.<span class="keyword">view</span> addConstraint<span class="variable">s:topLeftVFL1</span>];</div></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">NSArray *topRightVFL1 = [NSLayoutConstraint constraintsWithVisualForma<span class="variable">t:</span>@<span class="string">"V:|-20-[_viewTopRight(==_viewBottom)]-20-[_viewMiddle(==_viewBottom)]-20-[_viewBottom]-20-|"</span></div><div class="line">                                                                option<span class="variable">s:NSLayoutFormatDirectionLeadingToTrailing</span></div><div class="line">                                                                metric<span class="variable">s:nil</span></div><div class="line">                                                                  <span class="keyword">view</span><span class="variable">s:self</span>.viewDic];</div><div class="line"></div><div class="line">[self.<span class="keyword">view</span> addConstraint<span class="variable">s:topRightVFL1</span>];</div></pre></td></tr></table></figure>
+
+
+
+<p>当我们直接设置<code>self.viewMiddle.hidden=YES</code>时，会出现下图结果：</p>
+<div align="center"><br><img src="http://yhjblog.qiniudn.com/20150510QQ20150510-2@2x.png" width="20%" height="20%"></div>
+
+<p>从上图可以看到，红色的middleView即使被hidden了，也依然参与了Autolayout的过程，并有占位</p>
+<p>在网上查了一段时间之后，发现stackoverflow上<a href="http://stackoverflow.com/questions/18065938/how-to-use-auto-layout-to-move-other-views-when-a-view-is-hidden" target="_blank" rel="external">这篇文章</a>讨论了几种实现这种需求的方式</p>
+<h3 id="1-直接移除相关的view">1.直接移除相关的view</h3>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="title">[self.viewMiddle removeFromSuperview]</span><span class="comment">;</span></div></pre></td></tr></table></figure>
+
+<p>在一个view从其superview被移除之后，其所有相关的constraint都会被移除，此时，再对其上下的view添加需要的约束即可。<br>但是使用这种方式的话，再次viewMiddle时还是需要其进行addsubview，并将其原有的所有约束全部重新添加，在代码上还是相当麻烦的</p>
+<h3 id="2-通过调节viewMiddle_height的约束来控制其隐藏与否">2.通过调节viewMiddle height的约束来控制其隐藏与否</h3>
+<p>对viewMiddle设置height的约束，当其需要隐藏时，将height设置为0。但是这种方法的缺陷是可能出现这样的情况，viewMiddle与viewTop间有间距gap，viewMiddle与viewBottom间也有间距gap，此时若将viewMiddle的height设为0，viewBottom与viewTop之间的间距就会变成2*gap。最终还是需要调整相关的约束</p>
+<h3 id="3-动态设置不同情况下不同约束的优先级">3.动态设置不同情况下不同约束的优先级</h3>
+<p>为相关的view准备另一套viewMiddle隐藏时的布局约束,并为其设置较低的优先级：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="type">NSArray</span> *topLeftVFL2 = [<span class="type">NSLayoutConstraint</span> constraintsWithVisualFormat:@<span class="string">"V:|-20-[_viewTopLeft(==_viewBottom)]-20-[_viewBottom]-20-|"</span></div><div class="line">                                                              options:<span class="type">NSLayoutFormatDirectionLeadingToTrailing</span></div><div class="line">                                                              metrics:<span class="built_in">nil</span></div><div class="line">                                                                views:<span class="keyword">self</span>.viewDic];</div><div class="line"></div><div class="line">[topLeftVFL2 <span class="class"><span class="keyword">enum</span><span class="title">erateObjectsUsingBlock</span>:^(<span class="title">NSLayoutConstraint</span>* <span class="title">constraint</span>, <span class="title">NSUInteger</span> <span class="title">idx</span>, <span class="title">BOOL</span> *<span class="title">stop</span>) </span>{</div><div class="line">    constraint.priority = <span class="type">UILayoutPriorityFittingSizeLevel</span>;</div><div class="line">}];</div><div class="line"></div><div class="line"><span class="keyword">self</span>.topLeftArray2 = topLeftVFL2;</div><div class="line">[<span class="keyword">self</span>.view addConstraints:topLeftVFL2];</div></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="type">NSArray</span> *topRightVFL2 = [<span class="type">NSLayoutConstraint</span> constraintsWithVisualFormat:@<span class="string">"V:|-20-[_viewTopRight(==_viewBottom)]-20-[_viewBottom]-20-|"</span></div><div class="line">                                                                options:<span class="type">NSLayoutFormatDirectionLeadingToTrailing</span></div><div class="line">                                                                metrics:<span class="built_in">nil</span></div><div class="line">                                                                  views:<span class="keyword">self</span>.viewDic];</div><div class="line"></div><div class="line">[topRightVFL2 <span class="class"><span class="keyword">enum</span><span class="title">erateObjectsUsingBlock</span>:^(<span class="title">NSLayoutConstraint</span>* <span class="title">constraint</span>, <span class="title">NSUInteger</span> <span class="title">idx</span>, <span class="title">BOOL</span> *<span class="title">stop</span>) </span>{</div><div class="line">    constraint.priority = <span class="type">UILayoutPriorityFittingSizeLevel</span>;</div><div class="line">}];</div><div class="line"></div><div class="line"><span class="keyword">self</span>.topRightArray2 = topRightVFL2;</div><div class="line"></div><div class="line">[<span class="keyword">self</span>.view addConstraints:topRightVFL2];</div></pre></td></tr></table></figure>
+
+<p>在viewMiddle被隐藏时，相应地调整这套约束的优先级，将不包含viewMiddle的约束优先级调高，将原有的约束优先级调低即可</p>
+<h2 id="总结">总结</h2>
+<p>总的来说，autolayout还是很强大的，优先级的配置也足够灵活，但不清楚在runtime的情况下调整constraint的优先级是否会有效率上的问题，这个还有待观察。在view hidden后其他约束自动更新的功能实现后，接下来就准备结合RAC，通过mvvm的方式动态地调整view的显示和layout，下周再写这部分~ ：）</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>公司的app在前段时间终于开始不支持iOS5之后，Autolayout的学习也就再没有任何障碍了，这段时间可能会陆续在项目中开始使用Autolayout，后续遇到的坑应该也会持续更新在这里，做个记录</p>
+]]>
+    
+    </summary>
+    
+      <category term="ios" scheme="http://yoursite.com/tags/ios/"/>
+    
+      <category term="autolayout" scheme="http://yoursite.com/tags/autolayout/"/>
+    
+      <category term="program" scheme="http://yoursite.com/categories/program/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[objective-c rac 学习：map与flattenMap]]></title>
