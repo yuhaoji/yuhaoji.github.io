@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>耗子的鸡窝</title>
+  <title>spring-aop 拦截策略问题 | 耗子的鸡窝</title>
   <meta name="author" content="stanleyYu">
   
   <meta name="description" content="nothing to say">
@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  
+  <meta property="og:title" content="spring-aop 拦截策略问题"/>
   <meta property="og:site_name" content="耗子的鸡窝"/>
 
   
@@ -48,8 +48,7 @@
 <div class="clearfix"></div>
 </header>
   <div id="content" class="inner">
-    <div id="main-col" class="alignleft"><div id="wrapper">
-  <article class="post">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
   
     <div class="gallery">
   <div class="photoset">
@@ -71,7 +70,7 @@
       
       
   
-    <h1 class="title"><a href="/2016/03/10/spring-aop-feature/">spring-aop 拦截策略问题</a></h1>
+    <h1 class="title">spring-aop 拦截策略问题</h1>
   
 
     </header>
@@ -98,6 +97,17 @@
     <footer>
       
         
+  
+  <div class="categories">
+    <a href="/categories/program/">program</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/java/">java</a>, <a href="/tags/spring/">spring</a>
+  </div>
+
         
       
       <div class="clearfix"></div>
@@ -106,177 +116,29 @@
 </article>
 
 
-
-
-  <article class="post">
-  
-    <div class="gallery">
-  <div class="photoset">
-    
-      <img src="">
-    
-  </div>
-  <div class="control">
-    <div class="prev"></div>
-    <div class="next"></div>
-  </div>
-</div>
-  
-  <div class="post-content">
-    <header>
       
-        <div class="icon"></div>
-        <time datetime="2015-05-10T11:02:06.000Z"><a href="/2015/05/10/ios-autolayout-view-hidden/">May 10 2015</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2015/05/10/ios-autolayout-view-hidden/">iOS AutoLayout 实践 - view Hidden后的自动调整</a></h1>
+  <section id="comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-spring-aop-feature" data-title="spring-aop 拦截策略问题" data-url="http://yoursite.com/2016/03/10/spring-aop-feature/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+    <script type="text/javascript">
+    var duoshuoQuery = {short_name:'yuhaoji'};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+  </section>
   
 
-    </header>
-    <div class="entry">
-      
-        <p>公司的app在前段时间终于开始不支持iOS5之后，Autolayout的学习也就再没有任何障碍了，这段时间可能会陆续在项目中开始使用Autolayout，后续遇到的坑应该也会持续更新在这里，做个记录</p>
 
-      
-    </div>
-    <footer>
-      
-        
-          <div class="alignleft">
-            <a href="/2015/05/10/ios-autolayout-view-hidden/#more" class="more-link">Read More</a>
-          </div>
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-  <article class="post">
-  
-    <div class="gallery">
-  <div class="photoset">
-    
-      <img src="">
-    
-  </div>
-  <div class="control">
-    <div class="prev"></div>
-    <div class="next"></div>
-  </div>
-</div>
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2014-10-22T03:15:21.000Z"><a href="/2014/10/22/oc-rac-map/">Oct 22 2014</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2014/10/22/oc-rac-map/">objective-c rac 学习：map与flattenMap</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <p>这两天依照<a href="http://www.raywenderlich.com/62699/reactivecocoa-tutorial-pt1" target="_blank" rel="external">这篇文章</a>学习了一下RAC相关的概念，先写一篇总结一下map和flattenmap相关的内容，后面对RAC有整体性的了解之后再尝试补充一些基础的关于<em>RACSignal</em>的用法</p>
-<h2 id="map的用途">map的用途</h2>
-<p>之前提到的教程中主要用于对信号输出值的转换：</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">RACSignal *validUsernameSignal = [<span class="keyword">self</span><span class="variable">.usernameTextField</span><span class="variable">.rac_textSignal</span> map:^<span class="keyword">id</span>(<span class="built_in">NSString</span> *text){</div><div class="line">    <span class="keyword">return</span> @([<span class="keyword">self</span> isValidUsername:text]);</div><div class="line">}];</div></pre></td></tr></table></figure>
-
-<p>上面的代码通过rac对<code>UITextField</code>做的扩充，使用<code>rac_textSignal</code>来创建<code>RACSignal</code>，之后通过<strong>map</strong>将输入值从text转换为bool</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">RAC(<span class="keyword">self</span><span class="variable">.usernameTextField</span>,backgroundColor) = [validUsernameSignal map:^<span class="keyword">id</span>(<span class="built_in">NSNumber</span> *userNameValid){</div><div class="line">    <span class="keyword">return</span> [userNameValid boolValue] ? [<span class="built_in">UIColor</span> clearColor]:[<span class="built_in">UIColor</span> yellowColor];</div><div class="line">}];</div></pre></td></tr></table></figure>
-
-<p>这段代码通过map将bool值进一步转换为<code>UIColor</code></p>
-
-      
-    </div>
-    <footer>
-      
-        
-          <div class="alignleft">
-            <a href="/2014/10/22/oc-rac-map/#more" class="more-link">Read More</a>
-          </div>
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-  <article class="post">
-  
-    <div class="gallery">
-  <div class="photoset">
-    
-      <img src="">
-    
-  </div>
-  <div class="control">
-    <div class="prev"></div>
-    <div class="next"></div>
-  </div>
-</div>
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2014-09-30T03:36:29.000Z"><a href="/2014/09/30/hello-world/">Sep 30 2014</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2014/09/30/hello-world/">Hello World</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <p>Welcome to <a href="http://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="http://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="http://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">trobuleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick_Start">Quick Start</h2>
-<h3 id="Create_a_new_post">Create a new post</h3>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo new <span class="string">"My New Post"</span></div></pre></td></tr></table></figure>
-
-<p>More info: <a href="http://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run_server">Run server</h3>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo server</div></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer>
-      
-        
-          <div class="alignleft">
-            <a href="/2014/09/30/hello-world/#more" class="more-link">Read More</a>
-          </div>
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-
-<nav id="pagination">
-  
-  
-  <div class="clearfix"></div>
-</nav></div></div>
+</div></div>
     <aside id="sidebar" class="alignright">
   <div class="search">
   <form action="//google.com/search" method="get" accept-charset="utf-8">
